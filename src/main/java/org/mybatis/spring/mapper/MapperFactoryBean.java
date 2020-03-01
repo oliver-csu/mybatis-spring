@@ -65,6 +65,7 @@ public class MapperFactoryBean<T> extends SqlSessionDaoSupport implements Factor
     this.mapperInterface = mapperInterface;
   }
 
+  // MapperFactoryBean在容器初始化时，要确保mapper接口被注册到mapperRegistry
   /**
    * {@inheritDoc}
    */
@@ -87,6 +88,7 @@ public class MapperFactoryBean<T> extends SqlSessionDaoSupport implements Factor
     }
   }
 
+  // 通过在容器中的mapperRegistry，返回当前mapper接口的动态代理
   /**
    * {@inheritDoc}
    */
