@@ -91,6 +91,7 @@ import org.springframework.util.StringUtils;
 public class MapperScannerConfigurer
     implements BeanDefinitionRegistryPostProcessor, InitializingBean, ApplicationContextAware, BeanNameAware {
 
+  // 用户指定要扫描的包
   private String basePackage;
 
   private boolean addToConfig = true;
@@ -105,10 +106,13 @@ public class MapperScannerConfigurer
 
   private String sqlSessionTemplateBeanName;
 
+  // mapper接口上有指定的Annotation才会被扫描
   private Class<? extends Annotation> annotationClass;
 
+  // mapper接口继承与指定的接口才会被扫描
   private Class<?> markerInterface;
 
+  // 容器上下文
   private Class<? extends MapperFactoryBean> mapperFactoryBeanClass;
 
   private ApplicationContext applicationContext;
@@ -191,7 +195,7 @@ public class MapperScannerConfigurer
    * Specifies which {@code SqlSessionTemplate} to use in the case that there is more than one in the spring context.
    * Usually this is only needed when you have more than one datasource.
    * <p>
-   * 
+   *
    * @deprecated Use {@link #setSqlSessionTemplateBeanName(String)} instead
    *
    * @param sqlSessionTemplate
@@ -222,7 +226,7 @@ public class MapperScannerConfigurer
    * Specifies which {@code SqlSessionFactory} to use in the case that there is more than one in the spring context.
    * Usually this is only needed when you have more than one datasource.
    * <p>
-   * 
+   *
    * @deprecated Use {@link #setSqlSessionFactoryBeanName(String)} instead.
    *
    * @param sqlSessionFactory
@@ -253,7 +257,7 @@ public class MapperScannerConfigurer
    * Specifies a flag that whether execute a property placeholder processing or not.
    * <p>
    * The default is {@literal false}. This means that a property placeholder processing does not execute.
-   * 
+   *
    * @since 1.1.1
    *
    * @param processPropertyPlaceHolders
@@ -329,15 +333,17 @@ public class MapperScannerConfigurer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @since 1.0.2
    */
   @Override
   public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
+    // 占位符处理
     if (this.processPropertyPlaceHolders) {
       processPropertyPlaceHolders();
     }
 
+    // 实例化ClassPathMapperScanner，并对scanner相关属性进行配置
     ClassPathMapperScanner scanner = new ClassPathMapperScanner(registry);
     scanner.setAddToConfig(this.addToConfig);
     scanner.setAnnotationClass(this.annotationClass);
@@ -352,7 +358,9 @@ public class MapperScannerConfigurer
     if (StringUtils.hasText(lazyInitialization)) {
       scanner.setLazyInitialization(Boolean.valueOf(lazyInitialization));
     }
+    // 根据上述配置，生成过滤器，只扫描合条件的class
     scanner.registerFilters();
+    // 扫描指定的包以及其子包
     scanner.scan(
         StringUtils.tokenizeToStringArray(this.basePackage, ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS));
   }
